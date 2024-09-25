@@ -64,49 +64,49 @@ func ParseMGTP4IPv6Dst(ipv6Addr [16]byte, prefixLength uint) (*MGTP4IPv6Dst, err
 }
 
 // IPv4 returns the IPv4 Address encoded in the MGTP4IPv6Dst.
-func (e *MGTP4IPv6Dst) IPv4() netip.Addr {
-	return netip.AddrFrom4(e.ipv4)
+func (m *MGTP4IPv6Dst) IPv4() netip.Addr {
+	return netip.AddrFrom4(m.ipv4)
 }
 
 // ArgsMobSession returns the ArgsMobSession encoded in the MGTP4IPv6Dst.
-func (e *MGTP4IPv6Dst) ArgsMobSession() *ArgsMobSession {
-	return e.argsMobSession
+func (m *MGTP4IPv6Dst) ArgsMobSession() *ArgsMobSession {
+	return m.argsMobSession
 }
 
 // QFI returns the QFI encoded in the MGTP4IPv6Dst's ArgsMobSession.
-func (e *MGTP4IPv6Dst) QFI() uint8 {
-	return e.argsMobSession.QFI()
+func (m *MGTP4IPv6Dst) QFI() uint8 {
+	return m.argsMobSession.QFI()
 }
 
 // R returns the R bit encoded in the MGTP4IPv6Dst's ArgsMobSession.
-func (e *MGTP4IPv6Dst) R() bool {
-	return e.argsMobSession.R()
+func (m *MGTP4IPv6Dst) R() bool {
+	return m.argsMobSession.R()
 }
 
 // U returns the U bit encoded in the MGTP4IPv6Dst's ArgsMobSession.
-func (e *MGTP4IPv6Dst) U() bool {
-	return e.argsMobSession.U()
+func (m *MGTP4IPv6Dst) U() bool {
+	return m.argsMobSession.U()
 }
 
 // PDUSessionID returns the PDUSessionID for this MGTP4IPv6Dst's ArgsMobSession.
-func (a *MGTP4IPv6Dst) PDUSessionID() uint32 {
-	return a.argsMobSession.PDUSessionID()
+func (m *MGTP4IPv6Dst) PDUSessionID() uint32 {
+	return m.argsMobSession.PDUSessionID()
 }
 
 // Prefix returns the IPv6 Prefix for this MGTP4IPv6Dst.
-func (e *MGTP4IPv6Dst) Prefix() netip.Prefix {
-	return e.prefix
+func (m *MGTP4IPv6Dst) Prefix() netip.Prefix {
+	return m.prefix
 }
 
 // MarshalLen returns the serial length of MGTP4IPv6Dst.
-func (a *MGTP4IPv6Dst) MarshalLen() int {
+func (m *MGTP4IPv6Dst) MarshalLen() int {
 	return 16
 }
 
 // Marshal returns the byte sequence generated from MGTP4IPv6Dst.
-func (a *MGTP4IPv6Dst) Marshal() ([]byte, error) {
-	b := make([]byte, a.MarshalLen())
-	if err := a.MarshalTo(b); err != nil {
+func (m *MGTP4IPv6Dst) Marshal() ([]byte, error) {
+	b := make([]byte, m.MarshalLen())
+	if err := m.MarshalTo(b); err != nil {
 		return nil, err
 	}
 	return b, nil
@@ -114,16 +114,16 @@ func (a *MGTP4IPv6Dst) Marshal() ([]byte, error) {
 
 // MarshalTo puts the byte sequence in the byte array given as b.
 // warning: no caching is done, this result will be recomputed at each call
-func (a *MGTP4IPv6Dst) MarshalTo(b []byte) error {
-	if len(b) < a.MarshalLen() {
+func (m *MGTP4IPv6Dst) MarshalTo(b []byte) error {
+	if len(b) < m.MarshalLen() {
 		return errors.ErrTooShortToMarshal
 	}
 	// init ipv6 with the prefix
-	prefix := a.prefix.Addr().As16()
+	prefix := m.prefix.Addr().As16()
 	copy(b, prefix[:])
 
-	ipv4 := netip.AddrFrom4(a.ipv4).AsSlice()
-	bits := a.prefix.Bits()
+	ipv4 := netip.AddrFrom4(m.ipv4).AsSlice()
+	bits := m.prefix.Bits()
 	if bits == -1 {
 		return errors.ErrPrefixLength
 	}
@@ -132,7 +132,7 @@ func (a *MGTP4IPv6Dst) MarshalTo(b []byte) error {
 	if err := utils.AppendToSlice(b, uint(bits), ipv4); err != nil {
 		return err
 	}
-	argsMobSessionB, err := a.argsMobSession.Marshal()
+	argsMobSessionB, err := m.argsMobSession.Marshal()
 	if err != nil {
 		return err
 	}

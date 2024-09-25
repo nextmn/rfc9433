@@ -133,24 +133,24 @@ func ParseMGTP4IPv6Src(addr [16]byte, prefixLen uint) (*MGTP4IPv6Src, error) {
 }
 
 // IPv4 returns the IPv4 Address encoded in the MGTP4IPv6Src.
-func (e *MGTP4IPv6Src) IPv4() netip.Addr {
-	return netip.AddrFrom4(e.ipv4)
+func (m *MGTP4IPv6Src) IPv4() netip.Addr {
+	return netip.AddrFrom4(m.ipv4)
 }
 
 // UDPPortNumber returns the UDP Port Number encoded in the MGTP4IPv6Src (0 if not set).
-func (e *MGTP4IPv6Src) UDPPortNumber() uint16 {
-	return e.udp
+func (m *MGTP4IPv6Src) UDPPortNumber() uint16 {
+	return m.udp
 }
 
 // MarshalLen returns the serial length of MGTP4IPv6Src.
-func (a *MGTP4IPv6Src) MarshalLen() int {
+func (m *MGTP4IPv6Src) MarshalLen() int {
 	return 16
 }
 
 // Marshal returns the byte sequence generated from MGTP4IPv6Src.
-func (a *MGTP4IPv6Src) Marshal() ([]byte, error) {
-	b := make([]byte, a.MarshalLen())
-	if err := a.MarshalTo(b); err != nil {
+func (m *MGTP4IPv6Src) Marshal() ([]byte, error) {
+	b := make([]byte, m.MarshalLen())
+	if err := m.MarshalTo(b); err != nil {
 		return nil, err
 	}
 	return b, nil
@@ -158,18 +158,18 @@ func (a *MGTP4IPv6Src) Marshal() ([]byte, error) {
 
 // MarshalTo puts the byte sequence in the byte array given as b.
 // warning: no caching is done, this result will be recomputed at each call
-func (a *MGTP4IPv6Src) MarshalTo(b []byte) error {
-	if len(b) < a.MarshalLen() {
+func (m *MGTP4IPv6Src) MarshalTo(b []byte) error {
+	if len(b) < m.MarshalLen() {
 		return errors.ErrTooShortToMarshal
 	}
 	// init b with prefix
-	prefix := a.prefix.Addr().As16()
+	prefix := m.prefix.Addr().As16()
 	copy(b, prefix[:])
 
-	ipv4 := netip.AddrFrom4(a.ipv4).AsSlice()
+	ipv4 := netip.AddrFrom4(m.ipv4).AsSlice()
 	udp := make([]byte, 2)
-	binary.BigEndian.PutUint16(udp, a.udp)
-	bits := a.prefix.Bits()
+	binary.BigEndian.PutUint16(udp, m.udp)
+	bits := m.prefix.Bits()
 	if bits == -1 {
 		return errors.ErrPrefixLength
 	}
