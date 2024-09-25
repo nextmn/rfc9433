@@ -73,7 +73,7 @@ type MGTP4IPv6Src struct {
 	udp    uint16
 }
 
-// NewMGTP4IPv6Src creates a nw MGTP4IPv6Src
+// NewMGTP4IPv6Src creates a new MGTP4IPv6Src
 func NewMGTP4IPv6Src(prefix netip.Prefix, ipv4 [4]byte, udpPortNumber uint16) *MGTP4IPv6Src {
 	return &MGTP4IPv6Src{
 		prefix: prefix.Masked(),
@@ -86,34 +86,39 @@ func NewMGTP4IPv6Src(prefix netip.Prefix, ipv4 [4]byte, udpPortNumber uint16) *M
 func ParseMGTP4IPv6SrcNextMN(addr [16]byte) (*MGTP4IPv6Src, error) {
 	// Prefix length extraction
 	prefixLen := uint(ipv6LenEncodingMask & (addr[ipv6LenEncodingPosByte] >> ipv6LenEncodingPosBit))
+
+	r, err := ParseMGTP4IPv6Src(addr, prefixLen)
+	if err != nil {
+		return nil, err
+	}
+
+	if prefixLen+8*4+16+ipv6LenEncodingSizeBit > 8*16 {
+		// Prefix is too big: no space for UDP Port and "IPv6 Prefix length"
+		return nil, errors.ErrOutOfRange
+	}
+	// udp port extraction
+	if src, err := utils.FromIPv6(addr, prefixLen+8*4, 2); err != nil {
+		return nil, err
+	} else {
+		var udp [2]byte
+		copy(udp[:], src[:2])
+		r.udp = binary.BigEndian.Uint16([]byte{udp[0], udp[1]})
+	}
+	return r, nil
+}
+
+// ParseMGTP4IPv6SrcNextMN parses a given IPv6 source address without any specific bit pattern into a MGTP4IPv6Src
+func ParseMGTP4IPv6Src(addr [16]byte, prefixLen uint) (*MGTP4IPv6Src, error) {
 	if prefixLen == 0 {
 		// even if globally routable IPv6 Prefix size cannot currently be less than 32 (per ICANN policy),
 		// nothing prevent the use of such prefix with ULA (fc00::/7)
 		// or, in the future, a prefix from a currently not yet allocated address block.
 		return nil, errors.ErrPrefixLength
 	}
-	if prefixLen+8*4+16+ipv6LenEncodingSizeBit > 8*16 {
+	if prefixLen+8*4 > 8*16 {
+		// Prefix is too big: no space for IPv4 Address
 		return nil, errors.ErrOutOfRange
 	}
-
-	// udp port extraction
-	var udp [2]byte
-	if src, err := utils.FromIPv6(addr, prefixLen+8*4, 2); err != nil {
-		return nil, err
-	} else {
-		copy(udp[:], src[:2])
-	}
-
-	if r, err := ParseMGTP4IPv6Src(addr, prefixLen); err != nil {
-		return nil, err
-	} else {
-		r.udp = binary.BigEndian.Uint16([]byte{udp[0], udp[1]})
-		return r, nil
-	}
-}
-
-// ParseMGTP4IPv6SrcNextMN parses a given IPv6 source address without any specific bit pattern into a MGTP4IPv6Src
-func ParseMGTP4IPv6Src(addr [16]byte, prefixLen uint) (*MGTP4IPv6Src, error) {
 	// prefix extraction
 	a := netip.AddrFrom16(addr)
 	prefix := netip.PrefixFrom(a, int(prefixLen)).Masked()
