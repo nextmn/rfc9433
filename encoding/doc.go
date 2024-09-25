@@ -5,4 +5,4 @@
 
 // Package encoding provides encoding and decoding of IPv6 Addresses
 // used by RFC 9433 (Segment Routing over IPv6 for the Mobile User Plane).
-package rfc9433
+package encoding

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 // SPDX-License-Identifier: MIT
 
-package rfc9433
+package encoding
 
 import "encoding/binary"
 import "github.com/nextmn/rfc9433/encoding/errors"

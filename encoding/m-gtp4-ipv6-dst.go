@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 // SPDX-License-Identifier: MIT
 
-package rfc9433
+package encoding
 
 import (
 	"net/netip"
