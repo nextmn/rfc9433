@@ -59,7 +59,7 @@ const (
 // Note: even with this proposal, the remaining space (73 bits) is bigger
 // than what remains for LOC+FUNC in the SID (56 bits).
 //
-//	0                                                                         127
+//	0                                                                                          127
 //	+----------------------+--------+----------------+--------------------------+---------------+
 //	|  Source UPF Prefix   |IPv4 SA | UDP Source Port| any bit pattern(ignored) | Prefix length |
 //	+----------------------+--------+----------------+--------------------------+---------------+
