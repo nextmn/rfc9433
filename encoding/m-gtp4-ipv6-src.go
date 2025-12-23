@@ -59,11 +59,11 @@ const (
 // Note: even with this proposal, the remaining space (73 bits) is bigger
 // than what remains for LOC+FUNC in the SID (56 bits).
 //
-//	0                                                                                          127
-//	+----------------------+--------+----------------+--------------------------+---------------+
-//	|  Source UPF Prefix   |IPv4 SA | UDP Source Port| any bit pattern(ignored) | Prefix length |
-//	+----------------------+--------+----------------+--------------------------+---------------+
-//	        128-a-b'-c-7  a (32 bits) c (16 bits)                 b'             7 bits
+//	0                                                                                              127
+//	+----------------------+-----------+-----------------+--------------------------+---------------+
+//	|  Source UPF Prefix   |  IPv4 SA  | UDP Source Port | any bit pattern(ignored) | Prefix length |
+//	+----------------------+-----------+-----------------+--------------------------+---------------+
+//	    128-a-(b1+b2+b3)    a (32 bits)    b1 (16 bits)                 b2              b3 (7 bits)
 //	        IPv6 SA Encoding for End.M.GTP4.E in NextMN
 //
 // [TS 129.281, section 4.4.2.0]: https://www.etsi.org/deliver/etsi_ts/129200_129299/129281/17.04.00_60/ts_129281v170400p.pdf#page=16
