@@ -52,6 +52,9 @@ func ParseMGTP4IPv6Dst(ipv6Addr [16]byte, prefixLength uint) (*MGTP4IPv6Dst, err
 
 	// argMobSession extraction
 	argsMobSessionSlice, err := utils.FromIPv6(ipv6Addr, prefixLength+8*4, 5)
+	if err != nil {
+		return nil, err
+	}
 	argsMobSession, err := ParseArgsMobSession(argsMobSessionSlice)
 	if err != nil {
 		return nil, err

@@ -82,18 +82,12 @@ func (a *ArgsMobSession) QFI() uint8 {
 
 // R returns the Reflective QoS Indication for this ArgsMobSession.
 func (a *ArgsMobSession) R() bool {
-	if a.r == 0 {
-		return false
-	}
-	return true
+	return a.r != 0
 }
 
 // U returns the U bit for this ArgsMobSession.
 func (a *ArgsMobSession) U() bool {
-	if a.u == 0 {
-		return false
-	}
-	return true
+	return a.u != 0
 }
 
 // PDUSessionID returns the PDU Session Identifier for this ArgsMobSession. The GTP-U equivalent is TEID.
