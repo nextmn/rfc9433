@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 // SPDX-License-Identifier: MIT
 
-package encoding
+package encoding_test
 
-import "net/netip"
+import (
+	"net/netip"
+
+	"github.com/nextmn/rfc9433/encoding"
+)
 
 func ExampleMGTP4IPv6Dst() {
-	dst := NewMGTP4IPv6Dst(netip.MustParsePrefix("3fff::/20"), netip.MustParseAddr("203.0.113.1").As4(), NewArgsMobSession(0, false, false, 1))
+	dst := encoding.NewMGTP4IPv6Dst(netip.MustParsePrefix("3fff::/20"), netip.MustParseAddr("203.0.113.1").As4(), encoding.NewArgsMobSession(0, false, false, 1))
 	dst.Marshal()
 }
