@@ -85,7 +85,7 @@ func NewMGTP4IPv6Src(prefix netip.Prefix, ipv4 [4]byte, udpPortNumber uint16) *M
 // ParseMGTP4IPv6SrcNextMN parses a given IPv6 source address with NextMN bit pattern into a MGTP4IPv6Src
 func ParseMGTP4IPv6SrcNextMN(addr [16]byte) (*MGTP4IPv6Src, error) {
 	// Prefix length extraction
-	prefixLen := uint(ipv6LenEncodingMask & (addr[ipv6LenEncodingPosByte] >> ipv6LenEncodingPosBit))
+	prefixLen := int(ipv6LenEncodingMask & (addr[ipv6LenEncodingPosByte] >> ipv6LenEncodingPosBit))
 
 	r, err := ParseMGTP4IPv6Src(addr, prefixLen)
 	if err != nil {
@@ -94,7 +94,7 @@ func ParseMGTP4IPv6SrcNextMN(addr [16]byte) (*MGTP4IPv6Src, error) {
 
 	if prefixLen+8*4+16+ipv6LenEncodingSizeBit > 8*16 {
 		// Prefix is too big: no space for UDP Port and "IPv6 Prefix length"
-		return nil, errors.ErrOutOfRange
+		return nil, errors.ErrPrefixLength
 	}
 	// udp port extraction
 	if src, err := utils.FromIPv6(addr, prefixLen+8*4, 2); err != nil {
@@ -108,20 +108,19 @@ func ParseMGTP4IPv6SrcNextMN(addr [16]byte) (*MGTP4IPv6Src, error) {
 }
 
 // ParseMGTP4IPv6SrcNextMN parses a given IPv6 source address without any specific bit pattern into a MGTP4IPv6Src
-func ParseMGTP4IPv6Src(addr [16]byte, prefixLen uint) (*MGTP4IPv6Src, error) {
-	if prefixLen == 0 {
-		// even if globally routable IPv6 Prefix size cannot currently be less than 32 (per ICANN policy),
-		// nothing prevent the use of such prefix with ULA (fc00::/7)
-		// or, in the future, a prefix from a currently not yet allocated address block.
-		return nil, errors.ErrPrefixLength
-	}
+func ParseMGTP4IPv6Src(addr [16]byte, prefixLen int) (*MGTP4IPv6Src, error) {
 	if prefixLen+8*4 > 8*16 {
 		// Prefix is too big: no space for IPv4 Address
-		return nil, errors.ErrOutOfRange
+		return nil, errors.ErrPrefixLength
 	}
+
 	// prefix extraction
 	a := netip.AddrFrom16(addr)
-	prefix := netip.PrefixFrom(a, int(prefixLen)).Masked()
+	prefix := netip.PrefixFrom(a, prefixLen).Masked()
+	if prefix.Bits() == -1 {
+		// Prefix is too small (zero or less)
+		return nil, errors.ErrPrefixLength
+	}
 
 	// ipv4 extraction
 	var ipv4 [4]byte
@@ -180,11 +179,11 @@ func (m *MGTP4IPv6Src) MarshalTo(b []byte) error {
 	}
 
 	// add ipv4
-	if err := utils.AppendToSlice(b, uint(bits), ipv4); err != nil {
+	if err := utils.AppendToSlice(b, bits, ipv4); err != nil {
 		return err
 	}
 	// add upd port
-	if err := utils.AppendToSlice(b, uint(bits+8*4), udp); err != nil {
+	if err := utils.AppendToSlice(b, bits+8*4, udp); err != nil {
 		return err
 	}
 	// add prefix length

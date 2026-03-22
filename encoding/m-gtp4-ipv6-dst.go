@@ -37,10 +37,13 @@ func NewMGTP4IPv6Dst(prefix netip.Prefix, ipv4 [4]byte, a *ArgsMobSession) *MGTP
 }
 
 // ParseMGTP4IPv6Dst parses a given byte sequence into a MGTP4IPv6Dst according to the given prefixLength.
-func ParseMGTP4IPv6Dst(ipv6Addr [16]byte, prefixLength uint) (*MGTP4IPv6Dst, error) {
+func ParseMGTP4IPv6Dst(ipv6Addr [16]byte, prefixLength int) (*MGTP4IPv6Dst, error) {
 	// prefix extraction
 	a := netip.AddrFrom16(ipv6Addr)
-	prefix := netip.PrefixFrom(a, int(prefixLength)).Masked()
+	prefix := netip.PrefixFrom(a, prefixLength).Masked()
+	if prefix.Bits() == -1 {
+		return nil, errors.ErrPrefixLength
+	}
 
 	// ipv4 extraction
 	var ipv4 [4]byte
@@ -132,7 +135,7 @@ func (m *MGTP4IPv6Dst) MarshalTo(b []byte) error {
 	}
 
 	// add ipv4
-	if err := utils.AppendToSlice(b, uint(bits), ipv4); err != nil {
+	if err := utils.AppendToSlice(b, bits, ipv4); err != nil {
 		return err
 	}
 	argsMobSessionB, err := m.argsMobSession.Marshal()
@@ -140,7 +143,7 @@ func (m *MGTP4IPv6Dst) MarshalTo(b []byte) error {
 		return err
 	}
 	// add Args-Mob-Session
-	if err := utils.AppendToSlice(b, uint(bits+8*4), argsMobSessionB); err != nil {
+	if err := utils.AppendToSlice(b, bits+8*4, argsMobSessionB); err != nil {
 		return err
 	}
 	return nil
