@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 // SPDX-License-Identifier: MIT
 
-package encoding
+package rfc9433
 
 import (
+	"errors"
 	"net/netip"
 
-	"github.com/nextmn/rfc9433/encoding/errors"
 	"github.com/nextmn/rfc9433/internal/utils"
 )
 
@@ -42,7 +42,7 @@ func ParseMGTP4IPv6Dst(ipv6Addr [16]byte, prefixLength int) (*MGTP4IPv6Dst, erro
 	a := netip.AddrFrom16(ipv6Addr)
 	prefix := netip.PrefixFrom(a, prefixLength).Masked()
 	if prefix.Bits() == -1 {
-		return nil, errors.ErrPrefixLength
+		return nil, ErrPrefixLength
 	}
 
 	// ipv4 extraction
@@ -122,7 +122,7 @@ func (m *MGTP4IPv6Dst) Marshal() ([]byte, error) {
 // warning: no caching is done, this result will be recomputed at each call
 func (m *MGTP4IPv6Dst) MarshalTo(b []byte) error {
 	if len(b) < m.MarshalLen() {
-		return errors.ErrTooShortToMarshal
+		return ErrTooShortToMarshal
 	}
 	// init ipv6 with the prefix
 	prefix := m.prefix.Addr().As16()
@@ -131,7 +131,7 @@ func (m *MGTP4IPv6Dst) MarshalTo(b []byte) error {
 	ipv4 := netip.AddrFrom4(m.ipv4).AsSlice()
 	bits := m.prefix.Bits()
 	if bits == -1 {
-		return errors.ErrPrefixLength
+		return ErrPrefixLength
 	}
 
 	// add ipv4
@@ -140,11 +140,11 @@ func (m *MGTP4IPv6Dst) MarshalTo(b []byte) error {
 	}
 	argsMobSessionB, err := m.argsMobSession.Marshal()
 	if err != nil {
-		return err
+		return errors.Join(ErrPrefixLength, err)
 	}
 	// add Args-Mob-Session
 	if err := utils.AppendToSlice(b, bits+8*4, argsMobSessionB); err != nil {
-		return err
+		return errors.Join(ErrPrefixLength, err)
 	}
 	return nil
 }

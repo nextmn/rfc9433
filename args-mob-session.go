@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 // SPDX-License-Identifier: MIT
 
-package encoding
+package rfc9433
 
 import "encoding/binary"
-import "github.com/nextmn/rfc9433/encoding/errors"
 
 const (
 	// Field TEID
@@ -112,7 +111,7 @@ func (a *ArgsMobSession) Marshal() ([]byte, error) {
 // MarshalTo puts the byte sequence in the byte array given as b.
 func (a *ArgsMobSession) MarshalTo(b []byte) error {
 	if len(b) < a.MarshalLen() {
-		return errors.ErrTooShortToMarshal
+		return ErrTooShortToMarshal
 	}
 	b[qfiPosByte] |= (qfiMask & a.qfi) << qfiPosBit
 	b[rPosByte] |= (rMask & a.r) << rPosBit
@@ -124,7 +123,7 @@ func (a *ArgsMobSession) MarshalTo(b []byte) error {
 // UnmarshalBinary sets the values retrieved from byte sequence in an ArgsMobSession.
 func (a *ArgsMobSession) UnmarshalBinary(b []byte) error {
 	if len(b) < 5 {
-		return errors.ErrTooShortToParse
+		return ErrTooShortToParse
 	}
 	a.qfi = qfiMask & (b[qfiPosByte] >> qfiPosBit)
 	a.r = rMask & (b[rPosByte] >> rPosBit)

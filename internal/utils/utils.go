@@ -5,17 +5,15 @@
 
 package utils
 
-import "github.com/nextmn/rfc9433/encoding/errors"
-
 // ipv6: Address to extract bits from
 // startBit: offset in bits
 // length: length of result in Bytes
 func FromIPv6(ipv6 [16]byte, startBit int, length int) ([]byte, error) {
 	if len(ipv6) < length {
-		return nil, errors.ErrTooShortToParse
+		return nil, ErrOutOfRange
 	}
 	if startBit+(length*8) > 8*len(ipv6) {
-		return nil, errors.ErrOutOfRange
+		return nil, ErrOutOfRange
 	}
 	startByte := startBit / 8
 	offset := startBit % 8
@@ -48,7 +46,7 @@ func AppendToSlice(slice []byte, endBit int, appendThis []byte) error {
 		isOffset = 1
 	}
 	if isOffset+endByte+len(appendThis) > len(slice) {
-		return errors.ErrTooShortToMarshal
+		return ErrOutOfRange
 	}
 	if offset == 0 {
 		// concatenate slices

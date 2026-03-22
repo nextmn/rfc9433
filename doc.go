@@ -3,5 +3,6 @@
 // found in the LICENSE file.
 // SPDX-License-Identifier: MIT
 
-// Package rfc9433 provides functions to implement RFC9433 (Segment Routing over IPv6 for the Mobile User Plane).
+// Package rfc9433 provides encoding and decoding of IPv6 Addresses
+// used by RFC 9433 (Segment Routing over IPv6 for the Mobile User Plane).
 package rfc9433

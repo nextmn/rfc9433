@@ -3,20 +3,20 @@
 // found in the LICENSE file.
 // SPDX-License-Identifier: MIT
 
-package encoding_test
+package rfc9433_test
 
 import (
 	"fmt"
 	"net/netip"
 	"testing"
 
-	"github.com/nextmn/rfc9433/encoding"
+	"github.com/nextmn/rfc9433"
 
 	"github.com/google/go-cmp/cmp"
 )
 
 func ExampleMGTP4IPv6Src() {
-	src := encoding.NewMGTP4IPv6Src(netip.MustParsePrefix("3fff::/20"), netip.MustParseAddr("203.0.113.1").As4(), 1337)
+	src := rfc9433.NewMGTP4IPv6Src(netip.MustParsePrefix("3fff::/20"), netip.MustParseAddr("203.0.113.1").As4(), 1337)
 	src.Marshal()
 }
 
@@ -29,7 +29,7 @@ func TestMGTP4IPv6Src(t *testing.T) {
 		32,
 	}
 
-	e, err := encoding.ParseMGTP4IPv6SrcNextMN(ip_addr)
+	e, err := rfc9433.ParseMGTP4IPv6SrcNextMN(ip_addr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func TestMGTP4IPv6Src(t *testing.T) {
 	if e.UDPPortNumber() != 0x0123 {
 		t.Fatalf("Cannot extract udp port number correctly: %x", e.UDPPortNumber())
 	}
-	ip_addr2 := encoding.NewMGTP4IPv6Src(netip.MustParsePrefix("fd00:1:1::/48"), [4]byte{10, 0, 4, 1}, 0x1234)
+	ip_addr2 := rfc9433.NewMGTP4IPv6Src(netip.MustParsePrefix("fd00:1:1::/48"), [4]byte{10, 0, 4, 1}, 0x1234)
 	b, err := ip_addr2.Marshal()
 	if err != nil {
 		t.Fatal(err)

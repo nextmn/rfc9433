@@ -3,5 +3,10 @@
 // found in the LICENSE file.
 // SPDX-License-Identifier: MIT
 
-// Package errors provides common encoding errors used by rfc9433 package.
-package errors
+package utils
+
+import "errors"
+
+var (
+	ErrOutOfRange = errors.New("out of range")
+)

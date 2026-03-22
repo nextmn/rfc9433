@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 // SPDX-License-Identifier: MIT
 
-package encoding
+package rfc9433
 
 import (
 	"encoding/binary"
+	"errors"
 	"net/netip"
 
-	"github.com/nextmn/rfc9433/encoding/errors"
 	"github.com/nextmn/rfc9433/internal/utils"
 )
 
@@ -94,7 +94,7 @@ func ParseMGTP4IPv6SrcNextMN(addr [16]byte) (*MGTP4IPv6Src, error) {
 
 	if prefixLen+8*4+16+ipv6LenEncodingSizeBit > 8*16 {
 		// Prefix is too big: no space for UDP Port and "IPv6 Prefix length"
-		return nil, errors.ErrPrefixLength
+		return nil, ErrPrefixLength
 	}
 	// udp port extraction
 	if src, err := utils.FromIPv6(addr, prefixLen+8*4, 2); err != nil {
@@ -111,7 +111,7 @@ func ParseMGTP4IPv6SrcNextMN(addr [16]byte) (*MGTP4IPv6Src, error) {
 func ParseMGTP4IPv6Src(addr [16]byte, prefixLen int) (*MGTP4IPv6Src, error) {
 	if prefixLen+8*4 > 8*16 {
 		// Prefix is too big: no space for IPv4 Address
-		return nil, errors.ErrPrefixLength
+		return nil, ErrPrefixLength
 	}
 
 	// prefix extraction
@@ -119,7 +119,7 @@ func ParseMGTP4IPv6Src(addr [16]byte, prefixLen int) (*MGTP4IPv6Src, error) {
 	prefix := netip.PrefixFrom(a, prefixLen).Masked()
 	if prefix.Bits() == -1 {
 		// Prefix is too small (zero or less)
-		return nil, errors.ErrPrefixLength
+		return nil, ErrPrefixLength
 	}
 
 	// ipv4 extraction
@@ -164,7 +164,7 @@ func (m *MGTP4IPv6Src) Marshal() ([]byte, error) {
 // warning: no caching is done, this result will be recomputed at each call
 func (m *MGTP4IPv6Src) MarshalTo(b []byte) error {
 	if len(b) < m.MarshalLen() {
-		return errors.ErrTooShortToMarshal
+		return ErrTooShortToMarshal
 	}
 	// init b with prefix
 	prefix := m.prefix.Addr().As16()
@@ -175,16 +175,16 @@ func (m *MGTP4IPv6Src) MarshalTo(b []byte) error {
 	binary.BigEndian.PutUint16(udp, m.udp)
 	bits := m.prefix.Bits()
 	if bits == -1 {
-		return errors.ErrPrefixLength
+		return ErrPrefixLength
 	}
 
 	// add ipv4
 	if err := utils.AppendToSlice(b, bits, ipv4); err != nil {
-		return err
+		return errors.Join(ErrPrefixLength, err)
 	}
 	// add upd port
 	if err := utils.AppendToSlice(b, bits+8*4, udp); err != nil {
-		return err
+		return errors.Join(ErrPrefixLength, err)
 	}
 	// add prefix length
 	b[ipv6LenEncodingPosByte] = byte(bits)
