@@ -8,7 +8,5 @@ package rfc9433
 import "errors"
 
 var (
-	ErrTooShortToMarshal = errors.New("too short to serialize")
-	ErrTooShortToParse   = errors.New("too short to parse")
-	ErrPrefixLength      = errors.New("wrong prefix length")
+	ErrPrefixLength = errors.New("wrong prefix length")
 )

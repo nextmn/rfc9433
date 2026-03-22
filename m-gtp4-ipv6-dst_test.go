@@ -12,10 +12,12 @@ import (
 )
 
 func ExampleMGTP4IPv6Dst() {
-	dst := rfc9433.NewMGTP4IPv6Dst(
+	if dst, ok := rfc9433.MGTP4IPv6DstFrom(
 		netip.MustParsePrefix("3fff::/20"),
 		netip.MustParseAddr("203.0.113.1").As4(),
 		rfc9433.ArgsMobSessionFrom(0, false, false, 1).As5(),
-	)
-	dst.Marshal()
+	); ok {
+		dst.AsAddr().AsSlice()
+		// ...
+	}
 }

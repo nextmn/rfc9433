@@ -22,109 +22,89 @@ import (
 //	       128-a-b-c            a            b           c
 //	Figure 9: End.M.GTP4.E SID Encoding
 type MGTP4IPv6Dst struct {
-	prefix         netip.Prefix // prefix in canonical form
-	ipv4           [4]byte
+	gtp4Base
 	argsMobSession [5]byte
 }
 
-// NewMGTP4IPv6Dst creates a new MGTP4IPv6Dst.
-func NewMGTP4IPv6Dst(prefix netip.Prefix, ipv4 [4]byte, argsMobSession [5]byte) *MGTP4IPv6Dst {
-	return &MGTP4IPv6Dst{
-		prefix:         prefix.Masked(),
-		ipv4:           ipv4,
-		argsMobSession: argsMobSession,
+// MGTP4IPv6DstFrom creates a MGTP4IPv6Dst.
+// If prefix is invalid or larger than 56 bits, MGTP4Ipv6DstFrom returns [MGTP4IPv6Dst]{}, false
+func MGTP4IPv6DstFrom(prefix netip.Prefix, ipv4 [4]byte, argsMobSession [5]byte) (MGTP4IPv6Dst, bool) {
+	bits := prefix.Bits()
+	if bits == -1 || bits+(4*8)+(5*8) > 128 {
+		return MGTP4IPv6Dst{}, false
 	}
+	return MGTP4IPv6Dst{
+		gtp4Base: gtp4Base{
+			prefix: prefix.Masked(),
+			ipv4:   ipv4,
+		},
+		argsMobSession: argsMobSession,
+	}, true
 }
 
 // ParseMGTP4IPv6Dst parses a given byte sequence into a MGTP4IPv6Dst according to the given prefixLength.
-func ParseMGTP4IPv6Dst(ipv6Addr [16]byte, prefixLength int) (*MGTP4IPv6Dst, error) {
+func ParseMGTP4IPv6Dst(addr [16]byte, prefixLength int) (MGTP4IPv6Dst, error) {
 	// prefix extraction
-	a := netip.AddrFrom16(ipv6Addr)
+	a := netip.AddrFrom16(addr)
 	prefix := netip.PrefixFrom(a, prefixLength).Masked()
 	if prefix.Bits() == -1 {
-		return nil, ErrPrefixLength
+		return MGTP4IPv6Dst{}, ErrPrefixLength
 	}
 
 	// ipv4 extraction
 	var ipv4 [4]byte
-	if src, err := utils.FromIPv6(ipv6Addr, prefixLength, 4); err != nil {
-		return nil, errors.Join(ErrPrefixLength, err)
+	if dst, err := utils.FromIPv6(addr, prefixLength, 4); err != nil {
+		return MGTP4IPv6Dst{}, errors.Join(ErrPrefixLength, err)
 	} else {
-		copy(ipv4[:], src[:4])
+		copy(ipv4[:], dst[:4])
 	}
 
 	// argMobSession extraction
 	var argsMobSession [5]byte
-	argsMobSessionSlice, err := utils.FromIPv6(ipv6Addr, prefixLength+8*4, argsSessionSizeByte)
-	if err != nil {
-		return nil, errors.Join(ErrPrefixLength, err)
+	if argsMobSessionSlice, err := utils.FromIPv6(addr, prefixLength+8*4, argsSessionSizeByte); err != nil {
+		return MGTP4IPv6Dst{}, errors.Join(ErrPrefixLength, err)
 	} else {
 		copy(argsMobSession[:], argsMobSessionSlice[:5])
 	}
-	return &MGTP4IPv6Dst{
-		prefix:         prefix,
-		ipv4:           ipv4,
+	return MGTP4IPv6Dst{
+		gtp4Base: gtp4Base{
+			prefix: prefix,
+			ipv4:   ipv4,
+		},
 		argsMobSession: argsMobSession,
 	}, nil
 }
 
 // IPv4 returns the IPv4 Address encoded in the MGTP4IPv6Dst.
-func (m *MGTP4IPv6Dst) IPv4() netip.Addr {
+func (m MGTP4IPv6Dst) IPv4() netip.Addr {
 	return netip.AddrFrom4(m.ipv4)
 }
 
 // ArgsMobSession returns the ArgsMobSession encoded in the MGTP4IPv6Dst.
-func (m *MGTP4IPv6Dst) ArgsMobSession() ArgsMobSession {
+func (m MGTP4IPv6Dst) ArgsMobSession() ArgsMobSession {
 	return ArgsMobSessionFrom5(m.argsMobSession)
 }
 
 // Prefix returns the IPv6 Prefix for this MGTP4IPv6Dst.
-func (m *MGTP4IPv6Dst) Prefix() netip.Prefix {
+func (m MGTP4IPv6Dst) Prefix() netip.Prefix {
 	return m.prefix
 }
 
-// MarshalLen returns the serial length of MGTP4IPv6Dst.
-func (m *MGTP4IPv6Dst) MarshalLen() int {
-	return 16 // size of an IPv6 packet
-}
-
-// Marshal returns the byte sequence generated from MGTP4IPv6Dst.
-func (m *MGTP4IPv6Dst) Marshal() ([]byte, error) {
-	b := make([]byte, m.MarshalLen())
-	if err := m.MarshalTo(b); err != nil {
-		return nil, err
-	}
-	return b, nil
-}
-
-// MarshalTo puts the byte sequence in the byte array given as b.
-// warning: no caching is done, this result will be recomputed at each call
-func (m *MGTP4IPv6Dst) MarshalTo(b []byte) error {
-	if len(b) < m.MarshalLen() {
-		return ErrTooShortToMarshal
-	}
-
-	// get offset
+// AsAddr returns the [netip.Addr] representation of an MGTP4IPv6Dst
+func (m MGTP4IPv6Dst) AsAddr() netip.Addr {
 	bits := m.prefix.Bits()
 	if bits == -1 {
-		return ErrPrefixLength
+		return netip.Addr{}
+	}
+	addr := m.prefix.Addr().As16()
+	addr, err := utils.AppendTo16(addr, bits, netip.AddrFrom4(m.ipv4).AsSlice())
+	if err != nil {
+		return netip.Addr{}
+	}
+	addr, err = utils.AppendTo16(addr, bits+8*4, ArgsMobSessionFrom5(m.argsMobSession).AsSlice())
+	if err != nil {
+		return netip.Addr{}
 	}
 
-	// init ipv6 with the prefix
-	prefix := m.prefix.Addr().As16()
-	copy(b, prefix[:])
-
-	// add ipv4
-	ipv4 := netip.AddrFrom4(m.ipv4).AsSlice()
-	if err := utils.AppendToSlice(b, bits, ipv4); err != nil {
-		return err
-	}
-
-	// add Args-Mob-Session
-	argsMobSession := ArgsMobSessionFrom5(m.argsMobSession).AsSlice()
-	if err := utils.AppendToSlice(b, bits+8*4, argsMobSession); err != nil {
-		return errors.Join(ErrPrefixLength, err)
-	}
-
-	return nil
+	return netip.AddrFrom16(addr)
 }

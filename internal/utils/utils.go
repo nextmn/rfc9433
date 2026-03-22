@@ -35,31 +35,30 @@ func FromIPv6(ipv6 [16]byte, startBit int, length int) ([]byte, error) {
 }
 
 // usage conditions :
-// 1. slice must be large enough
-// 2. endBit must be positive
-// 3. every bit after endBit should be zero (no reset is performed in the function)
-func AppendToSlice(slice []byte, endBit int, appendThis []byte) error {
+// 1. endBit must be positive
+// 2. every bit after endBit should be zero (no reset is performed in the function)
+func AppendTo16(addr [16]byte, endBit int, appendThis []byte) ([16]byte, error) {
 	endByte := endBit / 8
 	offset := endBit % 8
 	isOffset := 0
 	if offset > 0 {
 		isOffset = 1
 	}
-	if isOffset+endByte+len(appendThis) > len(slice) {
-		return ErrOutOfRange
+	if isOffset+endByte+len(appendThis) > 16 {
+		return [16]byte{}, ErrOutOfRange
 	}
 	if offset == 0 {
 		// concatenate slices
-		copy(slice[endByte:], appendThis[:])
-		return nil
+		copy(addr[endByte:], appendThis[:])
+		return addr, nil
 	}
 	//  add right part of bytes
 	for i, b := range appendThis {
-		slice[endByte+i] |= b >> offset
+		addr[endByte+i] |= b >> offset
 	}
 	// add left part of bytes
 	for i, b := range appendThis {
-		slice[endByte+isOffset+i] |= b << (8 - offset)
+		addr[endByte+isOffset+i] |= b << (8 - offset)
 	}
-	return nil
+	return addr, nil
 }

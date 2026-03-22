@@ -60,7 +60,7 @@ func ArgsMobSessionFrom5(b [5]byte) ArgsMobSession {
 }
 
 // ArgsMobSessionFromSlice parses the 5-byte byte slice as an ArgsMobSession.
-// If slice length is not 5, ArgsMobsSession returns ArgsMobSession{}, false
+// If slice length is not 5, ArgsMobsSession returns [ArgsMobSession]{}, false
 func ArgsMobSessionFromSlice(slice []byte) (argsMobSession ArgsMobSession, ok bool) {
 	if len(slice) != 5 {
 		return ArgsMobSession{}, false
