@@ -125,7 +125,7 @@ func ParseMGTP4IPv6Src(addr [16]byte, prefixLen int) (*MGTP4IPv6Src, error) {
 	// ipv4 extraction
 	var ipv4 [4]byte
 	if src, err := utils.FromIPv6(addr, prefixLen, 4); err != nil {
-		return nil, err
+		return nil, errors.Join(ErrPrefixLength, err)
 	} else {
 		copy(ipv4[:], src[:4])
 	}
@@ -148,7 +148,7 @@ func (m *MGTP4IPv6Src) UDPPortNumber() uint16 {
 
 // MarshalLen returns the serial length of MGTP4IPv6Src.
 func (m *MGTP4IPv6Src) MarshalLen() int {
-	return 16
+	return 16 // size of an IPv6 packet
 }
 
 // Marshal returns the byte sequence generated from MGTP4IPv6Src.

@@ -8,6 +8,8 @@ package rfc9433
 import "encoding/binary"
 
 const (
+	argsSessionSizeByte = 5
+
 	// Field TEID
 	teidSizeByte = 4                // size of the field in bytes
 	teidSizeBit  = teidSizeByte * 8 // size of the field in bits
@@ -41,93 +43,83 @@ const (
 //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //	Figure 8: Args.Mob.Session Format
 type ArgsMobSession struct {
-	qfi          uint8  // QoS Flow Identifier (6 bits)
-	r            uint8  // Reflective QoS Indication (1 bit)
-	u            uint8  // Unused and for future use (1 bit)
+	qfi          uint8  // QoS Flow Identifier (6 bits: the 2 Most Significant Bits are ignored)
+	r            bool   // Reflective QoS Indication (1 bit)
+	u            bool   // Unused and for future use (1 bit)
 	pduSessionID uint32 // Identifier of PDU Session. The GTP-U equivalent is TEID (32 bits)
 }
 
+// ArgsMobSessionFrom5 parses the 5-byte byte slice as an ArgsMobSession.
+func ArgsMobSessionFrom5(b [5]byte) ArgsMobSession {
+	return ArgsMobSession{
+		qfi:          qfiMask & (b[qfiPosByte] >> qfiPosBit),
+		r:            (rMask&(b[rPosByte]>>rPosBit) == rMask),
+		u:            (uMask&(b[uPosByte]>>uPosBit) == uMask),
+		pduSessionID: binary.BigEndian.Uint32(b[teidPosByte : teidPosByte+teidSizeByte]),
+	}
+}
+
+// ArgsMobSessionFromSlice parses the 5-byte byte slice as an ArgsMobSession.
+// If slice length is not 5, ArgsMobsSession returns ArgsMobSession{}, false
+func ArgsMobSessionFromSlice(slice []byte) (argsMobSession ArgsMobSession, ok bool) {
+	if len(slice) != 5 {
+		return ArgsMobSession{}, false
+	}
+	return ArgsMobSessionFrom5([5]byte{
+		slice[0],
+		slice[1],
+		slice[2],
+		slice[3],
+		slice[4],
+	}), true
+}
+
 // NewArgsMobSession creates an ArgsMobSession.
-func NewArgsMobSession(qfi uint8, r bool, u bool, pduSessionID uint32) *ArgsMobSession {
-	var ruint uint8 = 0
-	if r {
-		ruint = 1
-	}
-	var uuint uint8 = 0
-	if u {
-		uuint = 1
-	}
-	return &ArgsMobSession{
-		qfi:          qfi,
-		r:            ruint,
-		u:            uuint,
+func ArgsMobSessionFrom(qfi uint8, r bool, u bool, pduSessionID uint32) ArgsMobSession {
+	return ArgsMobSession{
+		qfi:          (qfiMask & qfi),
+		r:            r,
+		u:            u,
 		pduSessionID: pduSessionID,
 	}
 }
 
-// ParseArgsMobSession parses given byte sequence as an ArgsMobSession.
-func ParseArgsMobSession(b []byte) (*ArgsMobSession, error) {
-	a := &ArgsMobSession{}
-	if err := a.UnmarshalBinary(b); err != nil {
-		return nil, err
-	}
-	return a, nil
-}
-
 // QFI returns the Qos Flow Identifier for this ArgsMobSession.
-func (a *ArgsMobSession) QFI() uint8 {
+func (a ArgsMobSession) QFI() uint8 {
 	return a.qfi
 }
 
 // R returns the Reflective QoS Indication for this ArgsMobSession.
-func (a *ArgsMobSession) R() bool {
-	return a.r != 0
+func (a ArgsMobSession) R() bool {
+	return a.r
 }
 
 // U returns the U bit for this ArgsMobSession.
-func (a *ArgsMobSession) U() bool {
-	return a.u != 0
+func (a ArgsMobSession) U() bool {
+	return a.u
 }
 
 // PDUSessionID returns the PDU Session Identifier for this ArgsMobSession. The GTP-U equivalent is TEID.
-func (a *ArgsMobSession) PDUSessionID() uint32 {
+func (a ArgsMobSession) PDUSessionID() uint32 {
 	return a.pduSessionID
 }
 
-// MarshalLen returns the serial length of ArgsMobSession.
-func (a *ArgsMobSession) MarshalLen() int {
-	return 5
-}
-
-// Marshal returns the byte sequence generated from ArgsMobSession.
-func (a *ArgsMobSession) Marshal() ([]byte, error) {
-	b := make([]byte, a.MarshalLen())
-	if err := a.MarshalTo(b); err != nil {
-		return nil, err
-	}
-	return b, nil
-}
-
-// MarshalTo puts the byte sequence in the byte array given as b.
-func (a *ArgsMobSession) MarshalTo(b []byte) error {
-	if len(b) < a.MarshalLen() {
-		return ErrTooShortToMarshal
-	}
+// As5 returns an ArgsMobSession in its 5-byte representation.
+func (a ArgsMobSession) As5() [5]byte {
+	var b [5]byte
 	b[qfiPosByte] |= (qfiMask & a.qfi) << qfiPosBit
-	b[rPosByte] |= (rMask & a.r) << rPosBit
-	b[uPosByte] |= (uMask & a.u) << uPosBit
+	if a.r {
+		b[rPosByte] |= rMask << rPosBit
+	}
+	if a.u {
+		b[uPosByte] |= uMask << uPosBit
+	}
 	binary.BigEndian.PutUint32(b[teidPosByte:teidPosByte+teidSizeByte], a.pduSessionID)
-	return nil
+	return b
 }
 
-// UnmarshalBinary sets the values retrieved from byte sequence in an ArgsMobSession.
-func (a *ArgsMobSession) UnmarshalBinary(b []byte) error {
-	if len(b) < 5 {
-		return ErrTooShortToParse
-	}
-	a.qfi = qfiMask & (b[qfiPosByte] >> qfiPosBit)
-	a.r = rMask & (b[rPosByte] >> rPosBit)
-	a.u = uMask & (b[uPosByte] >> uPosBit)
-	a.pduSessionID = binary.BigEndian.Uint32(b[teidPosByte : teidPosByte+teidSizeByte])
-	return nil
+// AsSlice returns an ArgsMobSession in its 5-byte representation.
+func (a ArgsMobSession) AsSlice() []byte {
+	b := a.As5()
+	return b[:]
 }
