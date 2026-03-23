@@ -19,5 +19,7 @@ func ExampleMGTP4IPv6Dst() {
 	); ok {
 		dst.AsAddr().AsSlice()
 		// ...
+		dst.IPv4()
+		dst.ArgsMobSession().PDUSessionID()
 	}
 }
