@@ -41,10 +41,8 @@ func MGTP4IPv6SrcFrom(prefix netip.Prefix, ipv4 [4]byte) (MGTP4IPv6Src, bool) {
 		return MGTP4IPv6Src{}, false
 	}
 	return MGTP4IPv6Src{
-		gtp4Base: gtp4Base{
-			prefix: prefix.Masked(),
-			ipv4:   ipv4,
-		},
+		prefix: prefix.Masked(),
+		ipv4:   ipv4,
 	}, true
 }
 
@@ -72,10 +70,8 @@ func ParseMGTP4IPv6Src(addr [16]byte, prefixLen int) (MGTP4IPv6Src, error) {
 	}
 
 	return MGTP4IPv6Src{
-		gtp4Base: gtp4Base{
-			prefix: prefix.Masked(),
-			ipv4:   ipv4,
-		},
+		prefix: prefix.Masked(),
+		ipv4:   ipv4,
 	}, nil
 }
 

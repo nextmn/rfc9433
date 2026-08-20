@@ -34,10 +34,8 @@ func MGTP4IPv6DstFrom(prefix netip.Prefix, ipv4 [4]byte, argsMobSession [5]byte)
 		return MGTP4IPv6Dst{}, false
 	}
 	return MGTP4IPv6Dst{
-		gtp4Base: gtp4Base{
-			prefix: prefix.Masked(),
-			ipv4:   ipv4,
-		},
+		prefix:         prefix.Masked(),
+		ipv4:           ipv4,
 		argsMobSession: argsMobSession,
 	}, true
 }
@@ -67,10 +65,8 @@ func ParseMGTP4IPv6Dst(addr [16]byte, prefixLength int) (MGTP4IPv6Dst, error) {
 		copy(argsMobSession[:], argsMobSessionSlice[:5])
 	}
 	return MGTP4IPv6Dst{
-		gtp4Base: gtp4Base{
-			prefix: prefix,
-			ipv4:   ipv4,
-		},
+		prefix:         prefix,
+		ipv4:           ipv4,
 		argsMobSession: argsMobSession,
 	}, nil
 }

@@ -71,11 +71,9 @@ func MGTP4IPv6SrcNextMNFrom(prefix netip.Prefix, ipv4 [4]byte, udpPortNumber uin
 		return MGTP4IPv6SrcNextMN{}, false
 	}
 	return MGTP4IPv6SrcNextMN{
-		gtp4Base: gtp4Base{
-			prefix: prefix.Masked(),
-			ipv4:   ipv4,
-		},
-		udp: udpPortNumber,
+		prefix: prefix.Masked(),
+		ipv4:   ipv4,
+		udp:    udpPortNumber,
 	}, true
 }
 
