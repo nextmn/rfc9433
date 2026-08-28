@@ -28,7 +28,7 @@ func FromIPv6(ipv6 [16]byte, startBit int, length int) ([]byte, error) {
 		ret[i] = (b << offset)
 	}
 	// init right
-	for i, b := range ipv6[startByte+1 : startByte+length] {
+	for i, b := range ipv6[startByte+1 : startByte+length+1] {
 		ret[i] |= b >> (8 - offset)
 	}
 	return ret, nil

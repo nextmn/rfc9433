@@ -5,7 +5,10 @@
 
 package rfc9433
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"strconv"
+)
 
 const (
 	argsSessionSizeByte = 5
@@ -122,4 +125,12 @@ func (a ArgsMobSession) As5() [5]byte {
 func (a ArgsMobSession) AsSlice() []byte {
 	b := a.As5()
 	return b[:]
+}
+
+// String returns the string form of an ArgsMobSession.
+func (a ArgsMobSession) String() string {
+	return "{ QFI: " + strconv.Itoa(int(a.qfi)) +
+		", R:" + strconv.FormatBool(a.r) +
+		", U:" + strconv.FormatBool(a.u) +
+		"PDU Session ID: " + strconv.Itoa(int(a.pduSessionID)) + "}"
 }

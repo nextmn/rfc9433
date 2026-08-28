@@ -26,10 +26,13 @@ func ExampleMGTP4IPv6SrcNextMN() {
 		if fields, err := rfc9433.ParseMGTP4IPv6SrcNextMN(src.AsAddr().As16()); err != nil {
 			panic(err)
 		} else {
-			fields.IPv4()
-			fields.UDPPortNumber()
+			fmt.Println("Embedded IPv4:", fields.IPv4())
+			fmt.Println("Embedded UDP Port Number:", fields.UDPPortNumber())
 		}
 	}
+	// Output:
+	// Embedded IPv4: 203.0.113.1
+	// Embedded UDP Port Number: 1337
 }
 
 func TestMGTP4IPv6SrcNextMN(t *testing.T) {
@@ -63,8 +66,6 @@ func TestMGTP4IPv6SrcNextMN(t *testing.T) {
 		0x00, 0x00, 0x00,
 		48,
 	}
-	fmt.Println(b)
-	fmt.Println(res2)
 	if diff := cmp.Diff(b, res2); diff != "" {
 		t.Error(diff)
 	}

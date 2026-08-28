@@ -25,9 +25,11 @@ func ExampleMGTP4IPv6Src() {
 		if fields, err := rfc9433.ParseMGTP4IPv6Src(src.AsAddr().As16(), 20); err != nil {
 			panic(err)
 		} else {
-			fields.IPv4()
+			fmt.Println("Embedded IPv4:", fields.IPv4())
 		}
 	}
+	// Output:
+	// Embedded IPv4: 203.0.113.1
 }
 
 func TestMGTP4IPv6Src(t *testing.T) {
@@ -54,8 +56,6 @@ func TestMGTP4IPv6Src(t *testing.T) {
 		10, 0, 4, 1,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	}
-	fmt.Println(b)
-	fmt.Println(res2)
 	if diff := cmp.Diff(b, res2); diff != "" {
 		t.Error(diff)
 	}

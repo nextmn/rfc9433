@@ -109,7 +109,7 @@ func (m MGTP4IPv6SrcNextMN) UDPPortNumber() uint16 {
 	return m.udp
 }
 
-// AsAddr returns the [netip.Addr] representation of an MGTP4IPv6SrcNextMN
+// AsAddr returns the [netip.Addr] representation of an MGTP4IPv6SrcNextMN.
 func (m MGTP4IPv6SrcNextMN) AsAddr() netip.Addr {
 	bits := m.prefix.Bits()
 	if bits == -1 {
@@ -135,4 +135,9 @@ func (m MGTP4IPv6SrcNextMN) AsAddr() netip.Addr {
 	addr[ipv6LenEncodingPosByte] = byte(bits)
 
 	return netip.AddrFrom16(addr)
+}
+
+// String returns the string form of an MGTP4IPv6SrcNextMN.
+func (m MGTP4IPv6SrcNextMN) String() string {
+	return m.AsAddr().String()
 }

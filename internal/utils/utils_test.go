@@ -34,6 +34,13 @@ func TestFromIPv6(t *testing.T) {
 	if diff := cmp.Diff(res, []byte{0xFD, 0x54}); diff != "" {
 		t.Error(diff)
 	}
+	res, err = FromIPv6(netip.MustParseAddr("0ff5:5000::").As16(), 4, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if diff := cmp.Diff(res, []byte{0xFF, 0x55}); diff != "" {
+		t.Error(diff)
+	}
 }
 
 func TestAppendTo16(t *testing.T) {

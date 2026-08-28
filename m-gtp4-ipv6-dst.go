@@ -104,3 +104,8 @@ func (m MGTP4IPv6Dst) AsAddr() netip.Addr {
 
 	return netip.AddrFrom16(addr)
 }
+
+// String returns the string form of an MGTP4IPv6Dst.
+func (m MGTP4IPv6Dst) String() string {
+	return m.AsAddr().String()
+}

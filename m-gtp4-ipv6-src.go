@@ -46,7 +46,7 @@ func MGTP4IPv6SrcFrom(prefix netip.Prefix, ipv4 [4]byte) (MGTP4IPv6Src, bool) {
 	}, true
 }
 
-// ParseMGTP4IPv6SrcNextMN parses a given IPv6 source address without any specific bit pattern into a MGTP4IPv6Src
+// ParseMGTP4IPv6SrcNextMN parses a given IPv6 source address without any specific bit pattern into a MGTP4IPv6Src.
 func ParseMGTP4IPv6Src(addr [16]byte, prefixLen int) (MGTP4IPv6Src, error) {
 	if prefixLen+8*4 > 8*16 {
 		// Prefix is too big: no space for IPv4 Address
@@ -75,7 +75,7 @@ func ParseMGTP4IPv6Src(addr [16]byte, prefixLen int) (MGTP4IPv6Src, error) {
 	}, nil
 }
 
-// AsAddr returns the [netip.Addr] representation of an MGTP4IPv6Src
+// AsAddr returns the [netip.Addr] representation of an MGTP4IPv6Src.
 func (m MGTP4IPv6Src) AsAddr() netip.Addr {
 	bits := m.prefix.Bits()
 	if bits == -1 {
@@ -90,4 +90,9 @@ func (m MGTP4IPv6Src) AsAddr() netip.Addr {
 	}
 
 	return netip.AddrFrom16(addr)
+}
+
+// String returns the string form of an MGTP4IPv6Src.
+func (m MGTP4IPv6Src) String() string {
+	return m.AsAddr().String()
 }
