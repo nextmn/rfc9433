@@ -127,9 +127,9 @@ func (a ArgsMobSession) AsSlice() []byte {
 	return b[:]
 }
 
-// String returns the string form of an ArgsMobSession.
-func (a ArgsMobSession) String() string {
-	return "{ QFI: " + strconv.Itoa(int(a.qfi)) +
+// GoString implements [fmt.GoStringer] interface.
+func (a ArgsMobSession) GoString() string {
+	return "ArgsMobSession{ QFI: " + strconv.Itoa(int(a.qfi)) +
 		", R:" + strconv.FormatBool(a.r) +
 		", U:" + strconv.FormatBool(a.u) +
 		"PDU Session ID: " + strconv.Itoa(int(a.pduSessionID)) + "}"
