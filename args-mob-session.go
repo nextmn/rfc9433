@@ -129,7 +129,7 @@ func (a ArgsMobSession) AsSlice() []byte {
 
 // GoString implements [fmt.GoStringer] interface.
 func (a ArgsMobSession) GoString() string {
-	return "ArgsMobSession{ QFI: " + strconv.Itoa(int(a.qfi)) +
+	return "ArgsMobSession{QFI: " + strconv.Itoa(int(a.qfi)) +
 		", R:" + strconv.FormatBool(a.r) +
 		", U:" + strconv.FormatBool(a.u) +
 		"PDU Session ID: " + strconv.Itoa(int(a.pduSessionID)) + "}"
